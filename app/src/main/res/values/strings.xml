@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Ndef Tag Emulation</string>
+    <string name="service_desc">Nour Virtual Tag</string>
+    <string name="aid_desc">Aid Description</string>
+</resources>
