@@ -1,4 +1,4 @@
-package com.nourify.ndeftagemulation.ui.screen.cardemulation
+package com.nourify.ndeftagemulation.ui.screens.cardemulation
 
 sealed class CardEmulationState {
     data object Idle: CardEmulationState()

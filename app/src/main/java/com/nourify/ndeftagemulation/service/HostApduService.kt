@@ -1,14 +1,18 @@
 package com.nourify.ndeftagemulation.service
 
-import android.app.Service
 import android.content.Intent
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.nfc.cardemulation.HostApduService
 import android.os.Bundle
 import android.util.Log
+import com.nourify.ndeftagemulation.ui.screens.cardemulation.VcardInfo
+import com.nourify.ndeftagemulation.ui.screens.cardemulation.WifiInfo
+import kotlinx.serialization.json.Json
 import java.io.UnsupportedEncodingException
 import java.math.BigInteger
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
 
 /**
  * This class emulates a NFC Forum Tag Type 4 containing a NDEF message
@@ -126,21 +130,123 @@ class HostApduService : HostApduService() {
         2,
     )
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.hasExtra("ndefMessage")!!) {
-            NDEF_URI =
-                NdefMessage(createTextRecord("en", intent.getStringExtra("ndefMessage")!!, NDEF_ID))
+    // constants NFC WIFI
+    private val NFC_TOKEN_MIME_TYPE = "application/vnd.wfa.wsc"
+    private val CREDENTIAL_FIELD_ID: Short = 0x100e
+    private val SSID_FIELD_ID: Short = 0x1045
+    private val AUTH_TYPE_FIELD_ID: Short = 0x1003
+    private val AUTH_TYPE_OPEN: Short = 0x0001
+    private val AUTH_TYPE_WPA_PSK: Short = 0x0002
+    private val AUTH_TYPE_WPA2_PSK: Short = 0x0020
+    private val NETWORK_KEY_FIELD_ID: Short = 0x1027
 
-            NDEF_URI_BYTES = NDEF_URI.toByteArray()
-            NDEF_URI_LEN = fillByteArrayToFixedDimension(
-                BigInteger.valueOf(NDEF_URI_BYTES.size.toLong()).toByteArray(),
-                2,
-            )
+    private fun generateNdefPayload(ssid: String, key: String): ByteArray {
+        val ssidBytes = ssid.toByteArray()
+        val keyBytes = key.toByteArray()
+
+        val bufferSize = 18 + ssidBytes.size + keyBytes.size
+        val buffer = ByteBuffer.allocate(bufferSize)
+
+        buffer.putShort(CREDENTIAL_FIELD_ID)
+        buffer.putShort((bufferSize - 4).toShort())
+
+        buffer.putShort(SSID_FIELD_ID)
+        buffer.putShort(ssidBytes.size.toShort())
+        buffer.put(ssidBytes)
+
+        buffer.putShort(AUTH_TYPE_FIELD_ID)
+        buffer.putShort(2)
+        buffer.putShort(AUTH_TYPE_WPA_PSK) // Or other auth type
+
+        buffer.putShort(NETWORK_KEY_FIELD_ID)
+        buffer.putShort(keyBytes.size.toShort())
+        buffer.put(keyBytes)
+
+        return buffer.array()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent != null) {
+            when {
+                intent.hasExtra("ndefMessage") -> {
+                    NDEF_URI =
+                        NdefMessage(createTextRecord("en", intent.getStringExtra("ndefMessage")!!, NDEF_ID))
+
+                    NDEF_URI_BYTES = NDEF_URI.toByteArray()
+                    NDEF_URI_LEN = fillByteArrayToFixedDimension(
+                        BigInteger.valueOf(NDEF_URI_BYTES.size.toLong()).toByteArray(),
+                        2,
+                    )
+                }
+                intent.hasExtra("ndefWifi") -> {
+                    val wifiInfo = Json.decodeFromString<WifiInfo>(intent.getStringExtra("ndefWifi")!!)
+                    val payload = generateNdefPayload(wifiInfo.ssid, wifiInfo.password)
+
+                    val mimeRecord = NdefRecord(
+                        NdefRecord.TNF_MIME_MEDIA,
+                        NFC_TOKEN_MIME_TYPE.toByteArray(Charset.forName("US-ASCII")),
+                        ByteArray(0),
+                        payload
+                    )
+
+                    NDEF_URI = NdefMessage(mimeRecord)
+
+                    NDEF_URI_BYTES = NDEF_URI.toByteArray()
+                    NDEF_URI_LEN = fillByteArrayToFixedDimension(
+                        BigInteger.valueOf(NDEF_URI_BYTES.size.toLong()).toByteArray(),
+                        2,
+                    )
+                }
+                intent.hasExtra("ndefVcard") -> {
+                    val vCardInfo = Json.decodeFromString<VcardInfo>(intent.getStringExtra("ndefVcard")!!)
+                    NDEF_URI = createVCardNdefMessage(
+                        firstName = vCardInfo.firstName,
+                        lastName = vCardInfo.lastName,
+                        phoneNumber = vCardInfo.phoneNumber,
+                        email = vCardInfo.email
+                    )
+
+                    NDEF_URI_BYTES = NDEF_URI.toByteArray()
+                    NDEF_URI_LEN = fillByteArrayToFixedDimension(
+                        BigInteger.valueOf(NDEF_URI_BYTES.size.toLong()).toByteArray(),
+                        2,
+                    )
+                }
+            }
         }
 
         Log.i(TAG, "onStartCommand() | NDEF$NDEF_URI")
 
-        return Service.START_STICKY
+        return START_STICKY
+    }
+
+    fun createVCardNdefMessage(
+        firstName: String,
+        lastName: String,
+        phoneNumber: String,
+        email: String
+    ): NdefMessage {
+        val vCardString = """
+        BEGIN:VCARD
+        VERSION:3.0
+        N:$lastName;$firstName;;;;
+        FN:$firstName $lastName
+        TEL;TYPE=cell:$phoneNumber
+        EMAIL:$email
+        END:VCARD
+        """.trimIndent()
+
+        val mimeType = "text/x-vcard"
+        val vCardBytes = vCardString.toByteArray(Charset.forName("UTF-8"))
+
+        val mimeRecord = NdefRecord(
+            NdefRecord.TNF_MIME_MEDIA,
+            mimeType.toByteArray(Charset.forName("US-ASCII")),
+            ByteArray(0),
+            vCardBytes
+        )
+
+        return NdefMessage(mimeRecord)
     }
 
     override fun processCommandApdu(commandApdu: ByteArray, extras: Bundle?): ByteArray {
