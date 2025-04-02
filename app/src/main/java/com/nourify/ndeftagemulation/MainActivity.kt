@@ -32,8 +32,8 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     CardEmulation(
                         vm = vm,
-                        initEmulation = { vm.initTagEmulation(this, mNfcAdapter) },
-                        checkNfcSupport = { vm.checkNfcSupport(this, mNfcAdapter) },
+                        initEmulation = { vm.initTagEmulation(applicationContext, mNfcAdapter) },
+                        checkNfcSupport = { vm.checkNfcSupport(applicationContext, mNfcAdapter) },
                         modifier = Modifier.padding(innerPadding),
                     )
                 }

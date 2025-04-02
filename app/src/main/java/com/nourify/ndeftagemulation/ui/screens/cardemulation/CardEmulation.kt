@@ -118,21 +118,11 @@ fun CardEmulation(
     }
 
     when(emulationState) {
-        CardEmulationState.EmptyTextField -> {
-            makeToast(context, "The text field is empty")
-        }
-        CardEmulationState.NfcDisabled -> {
-            makeToast(context, "Please activate the NFC")
-        }
-        CardEmulationState.NoHceSupport -> {
-            makeToast(context, "This device doesn't support tag emulation")
-        }
-        CardEmulationState.HceServiceStartFail -> {
-            makeToast(context, "failed to start emulation service")
-        }
-        CardEmulationState.HceServiceStartSuccess -> {
-            makeToast(context, "Started emulation successfully", Toast.LENGTH_LONG)
-        }
+        CardEmulationState.EmptyTextField -> makeToast(context, "The text field is empty")
+        CardEmulationState.NfcDisabled -> makeToast(context, "Please activate the NFC")
+        CardEmulationState.NoHceSupport -> makeToast(context, "This device doesn't support tag emulation")
+        CardEmulationState.HceServiceStartFail -> makeToast(context, "failed to start emulation service")
+        CardEmulationState.HceServiceStartSuccess -> makeToast(context, "Started emulation successfully", Toast.LENGTH_LONG)
         else -> {}
     }.let {
         vm.resetCardEmulationStat()

@@ -7,7 +7,7 @@ import android.content.pm.PackageManager
 import android.nfc.NfcAdapter
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.nourify.ndeftagemulation.service.HostApduService
+import com.nourify.ndeftagemulation.service.CardEmulationService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -66,10 +66,10 @@ class CardEmulationVm: ViewModel() {
         )
     }
 
-    fun initTagEmulation(activity: Activity, nfcAdapter: NfcAdapter?) {
-        val intent = Intent(activity, HostApduService::class.java)
+    fun initTagEmulation(context: Context, nfcAdapter: NfcAdapter?) {
+        val intent = Intent(context, CardEmulationService::class.java)
 
-        if (checkNfcSupport(activity, nfcAdapter)) {
+        if (checkNfcSupport(context, nfcAdapter)) {
             when(_tagInfo.value.tagType) {
                 TagType.TEXT_TAG -> {
                     Log.d(this.javaClass.name, "text")
@@ -105,7 +105,7 @@ class CardEmulationVm: ViewModel() {
             }
 
             try {
-                activity.startService(intent)
+                context.startService(intent)
                 // emulation started successfully
                 _cardEmulationState.value = CardEmulationState.HceServiceStartSuccess
             } catch (e: Exception) {

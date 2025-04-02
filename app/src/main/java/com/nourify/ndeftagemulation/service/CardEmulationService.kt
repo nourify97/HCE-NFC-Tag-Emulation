@@ -18,7 +18,7 @@ import java.nio.charset.Charset
  * This class emulates a NFC Forum Tag Type 4 containing a NDEF message
  * The class uses the AID D2760000850101
  */
-class HostApduService : HostApduService() {
+class CardEmulationService : HostApduService() {
 
     private val TAG = "HostApduService"
 
@@ -171,12 +171,6 @@ class HostApduService : HostApduService() {
                 intent.hasExtra("ndefMessage") -> {
                     NDEF_URI =
                         NdefMessage(createTextRecord("en", intent.getStringExtra("ndefMessage")!!, NDEF_ID))
-
-                    NDEF_URI_BYTES = NDEF_URI.toByteArray()
-                    NDEF_URI_LEN = fillByteArrayToFixedDimension(
-                        BigInteger.valueOf(NDEF_URI_BYTES.size.toLong()).toByteArray(),
-                        2,
-                    )
                 }
                 intent.hasExtra("ndefWifi") -> {
                     val wifiInfo = Json.decodeFromString<WifiInfo>(intent.getStringExtra("ndefWifi")!!)
@@ -190,29 +184,24 @@ class HostApduService : HostApduService() {
                     )
 
                     NDEF_URI = NdefMessage(mimeRecord)
-
-                    NDEF_URI_BYTES = NDEF_URI.toByteArray()
-                    NDEF_URI_LEN = fillByteArrayToFixedDimension(
-                        BigInteger.valueOf(NDEF_URI_BYTES.size.toLong()).toByteArray(),
-                        2,
-                    )
                 }
                 intent.hasExtra("ndefVcard") -> {
                     val vCardInfo = Json.decodeFromString<VcardInfo>(intent.getStringExtra("ndefVcard")!!)
+
                     NDEF_URI = createVCardNdefMessage(
                         firstName = vCardInfo.firstName,
                         lastName = vCardInfo.lastName,
                         phoneNumber = vCardInfo.phoneNumber,
                         email = vCardInfo.email
                     )
-
-                    NDEF_URI_BYTES = NDEF_URI.toByteArray()
-                    NDEF_URI_LEN = fillByteArrayToFixedDimension(
-                        BigInteger.valueOf(NDEF_URI_BYTES.size.toLong()).toByteArray(),
-                        2,
-                    )
                 }
             }
+
+            NDEF_URI_BYTES = NDEF_URI.toByteArray()
+            NDEF_URI_LEN = fillByteArrayToFixedDimension(
+                BigInteger.valueOf(NDEF_URI_BYTES.size.toLong()).toByteArray(),
+                2,
+            )
         }
 
         Log.i(TAG, "onStartCommand() | NDEF$NDEF_URI")
@@ -220,7 +209,7 @@ class HostApduService : HostApduService() {
         return START_STICKY
     }
 
-    fun createVCardNdefMessage(
+    private fun createVCardNdefMessage(
         firstName: String,
         lastName: String,
         phoneNumber: String,
