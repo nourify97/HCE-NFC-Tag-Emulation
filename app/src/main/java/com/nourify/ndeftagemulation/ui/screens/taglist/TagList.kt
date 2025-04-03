@@ -19,6 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.nourify.ndeftagemulation.R
+import com.nourify.ndeftagemulation.data.storage.NdefTag
 import com.nourify.ndeftagemulation.ui.screens.cardemulation.TagDetail
 import com.nourify.ndeftagemulation.ui.screens.cardemulation.TagType
 import com.nourify.ndeftagemulation.ui.screens.cardemulation.VcardInfo
@@ -30,8 +31,6 @@ fun TagList(
     modifier: Modifier = Modifier,
     vm: TagListVM = koinViewModel(),
 ) {
-    val tagList: List<TagDetail> = emptyList()
-
     Content(
         tagList = tagList,
         modifier = Modifier.fillMaxSize()
@@ -40,7 +39,7 @@ fun TagList(
 
 @Composable
 fun Content(
-    tagList: List<TagDetail>,
+    tagList: List<NdefTag>,
     modifier: Modifier = Modifier,
 ) {
     if (tagList.isEmpty()) {

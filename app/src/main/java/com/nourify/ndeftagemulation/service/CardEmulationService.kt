@@ -6,7 +6,7 @@ import android.nfc.cardemulation.HostApduService
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import com.nourify.ndeftagemulation.data.NdefEncoder
+import com.nourify.ndeftagemulation.util.NdefEncoder
 import com.nourify.ndeftagemulation.util.fillByteArrayToFixedDimension
 import com.nourify.ndeftagemulation.util.toHex
 import org.koin.android.ext.android.inject

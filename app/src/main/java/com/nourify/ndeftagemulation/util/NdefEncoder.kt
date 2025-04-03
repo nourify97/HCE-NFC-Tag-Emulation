@@ -1,4 +1,4 @@
-package com.nourify.ndeftagemulation.data
+package com.nourify.ndeftagemulation.util
 
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord

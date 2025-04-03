@@ -43,7 +43,10 @@ android {
 
 dependencies {
 
+    // kotlin serialization
     implementation(libs.kotlinx.serialization.json)
+
+    // compose nav
     implementation(libs.androidx.navigation.compose)
 
     // dependency injection
@@ -51,6 +54,11 @@ dependencies {
     implementation(libs.koin.annotations)
     implementation(libs.koin.androidx.compose)
     ksp(libs.koin.ksp.compiler)
+
+    // room db
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

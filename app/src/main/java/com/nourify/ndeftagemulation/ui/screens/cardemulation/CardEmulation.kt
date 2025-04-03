@@ -120,7 +120,7 @@ fun CardEmulation(
             Button(onClick = { vm.initTagEmulation(context, mNfcAdapter) }) {
                 Text("Emulate Tag")
             }
-            Button(onClick = { }) {
+            Button(onClick = vm::saveTag) {
                 Text("Save Tag")
             }
         }
