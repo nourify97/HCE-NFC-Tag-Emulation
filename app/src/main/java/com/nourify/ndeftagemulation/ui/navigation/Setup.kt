@@ -13,7 +13,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
 import com.nourify.ndeftagemulation.ui.screens.cardemulation.CardEmulation
-import com.nourify.ndeftagemulation.ui.screens.cardemulation.CardEmulationVm
 import com.nourify.ndeftagemulation.ui.screens.taglist.TagList
 
 @Composable
@@ -30,17 +29,13 @@ fun Setup(
         val graph =
             navController.createGraph(startDestination = Screen.Home.route) {
                 composable(route = Screen.Home.route) {
-                    val vm = CardEmulationVm()
-
                     CardEmulation(
-                        vm = vm,
-                        initEmulation = { vm.initTagEmulation(applicationContext, mNfcAdapter) },
-                        checkNfcSupport = { vm.checkNfcSupport(applicationContext, mNfcAdapter) },
-                        modifier = Modifier.padding(innerPadding),
+                        mNfcAdapter = mNfcAdapter,
+                        context = applicationContext,
                     )
                 }
                 composable(route = Screen.TagList.route) {
-                    TagList(listOf())
+                    TagList()
                 }
             }
 

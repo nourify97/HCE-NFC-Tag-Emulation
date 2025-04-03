@@ -1,6 +1,7 @@
 package com.nourify.ndeftagemulation.ui.screens.taglist
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,22 +23,46 @@ import com.nourify.ndeftagemulation.ui.screens.cardemulation.TagDetail
 import com.nourify.ndeftagemulation.ui.screens.cardemulation.TagType
 import com.nourify.ndeftagemulation.ui.screens.cardemulation.VcardInfo
 import com.nourify.ndeftagemulation.ui.screens.cardemulation.WifiInfo
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun TagList(
+    modifier: Modifier = Modifier,
+    vm: TagListVM = koinViewModel(),
+) {
+    val tagList: List<TagDetail> = emptyList()
+
+    Content(
+        tagList = tagList,
+        modifier = Modifier.fillMaxSize()
+    )
+}
+
+@Composable
+fun Content(
     tagList: List<TagDetail>,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(
-        modifier = modifier,
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.Top)
-    ) {
-        items(tagList) { tag ->
-            TagItem(
-                tagDetail = tag,
-                modifier = Modifier.fillMaxWidth()
-            )
+    if (tagList.isEmpty()) {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text("No tags Available")
+        }
+    } else {
+        LazyColumn(
+            modifier = modifier,
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.Top)
+        ) {
+            items(tagList) { tag ->
+                TagItem(
+                    tagDetail = tag,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }
@@ -117,7 +142,7 @@ private fun TagListPrev() {
         )
     )
 
-    TagList(
+    Content(
         tagList = tagDetailsList,
         modifier = Modifier.fillMaxSize()
     )

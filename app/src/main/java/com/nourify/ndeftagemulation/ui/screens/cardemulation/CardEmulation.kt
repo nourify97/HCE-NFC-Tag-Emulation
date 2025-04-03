@@ -1,10 +1,12 @@
 package com.nourify.ndeftagemulation.ui.screens.cardemulation
 
 import android.content.Context
+import android.nfc.NfcAdapter
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,16 +35,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.nourify.ndeftagemulation.ui.components.NfcCard
 import com.nourify.ndeftagemulation.ui.components.TagTypeItem
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun CardEmulation(
-    vm: CardEmulationVm,
-    initEmulation: () -> Unit,
-    checkNfcSupport: () -> Unit,
+    context: Context,
+    mNfcAdapter: NfcAdapter?,
     modifier: Modifier = Modifier,
+    vm: CardEmulationVm = koinViewModel()
 ) {
-    val context = LocalContext.current
-
     val tagInfo by vm.tagInfo.collectAsState()
     val emulationState by vm.cardEmulationState.collectAsState()
 
@@ -51,10 +52,10 @@ fun CardEmulation(
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
+        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
     ) {
         NfcCard(tagInfo.tagMsgContent)
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
         TagTypeItem(
             expanded = expanded,
             selectedTagType = tagInfo.tagType.ordinal,
@@ -111,8 +112,17 @@ fun CardEmulation(
                 )
             }
         }
-        Button(onClick = { initEmulation() }) {
-            Text("Emulate Tag")
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(
+                16.dp, Alignment.CenterHorizontally
+            )
+        ) {
+            Button(onClick = { vm.initTagEmulation(context, mNfcAdapter) }) {
+                Text("Emulate Tag")
+            }
+            Button(onClick = { }) {
+                Text("Save Tag")
+            }
         }
         Spacer(Modifier.height(16.dp))
     }
@@ -129,22 +139,11 @@ fun CardEmulation(
     }
 
     LifecycleResumeEffect(key1 = null) {
-        checkNfcSupport()
+        vm.checkNfcSupport(context, mNfcAdapter)
         onPauseOrDispose {}
     }
 }
 
 private fun makeToast(context: Context, msg: String, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(context, msg, duration).show()
-}
-
-@Preview
-@Composable
-private fun CardEmulationPrev() {
-    CardEmulation(
-        vm = CardEmulationVm(),
-        initEmulation = {},
-        checkNfcSupport = {},
-        modifier = Modifier,
-    )
 }
