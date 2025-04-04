@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -20,10 +19,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.nourify.ndeftagemulation.ui.components.NfcCard
 import com.nourify.ndeftagemulation.ui.components.TagTypeItem
+import com.nourify.ndeftagemulation.ui.components.TextTagField
+import com.nourify.ndeftagemulation.ui.components.UrlTagField
+import com.nourify.ndeftagemulation.ui.components.VCardTagField
+import com.nourify.ndeftagemulation.ui.components.WifiTagField
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -35,6 +39,8 @@ fun CardEmulation(
 ) {
     val tagInfo by vm.tagInfo.collectAsState()
     val emulationState by vm.cardEmulationState.collectAsState()
+
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     var expanded by remember { mutableStateOf(false) }
 
@@ -53,51 +59,39 @@ fun CardEmulation(
         )
         when (tagInfo.tagType) {
             TagType.TEXT_TAG -> {
-                OutlinedTextField(
+                TextTagField(
                     value = tagInfo.tagMsgContent,
                     onValueChange = vm::onMsgTagInfoChange,
-                    label = { Text("Tag content") },
+                    keyboardController = keyboardController
                 )
             }
             TagType.URL_TAG -> {
-                OutlinedTextField(
+                UrlTagField(
                     value = tagInfo.tagMsgContent,
-                    onValueChange = vm::onMsgTagInfoChange,
-                    label = { Text("Tag url") },
+                    onValueChange = vm::onUrlTagInfoChange,
+                    keyboardController = keyboardController
                 )
             }
             TagType.WIFI_TAG -> {
-                OutlinedTextField(
-                    value = tagInfo.wifiInfo.ssid,
-                    onValueChange = vm::onWifiTagSsidChange,
-                    label = { Text("Wifi ssid") },
-                )
-                OutlinedTextField(
-                    value = tagInfo.wifiInfo.password,
-                    onValueChange = vm::onWifiTagPasswordChange,
-                    label = { Text("Wifi password") },
+                WifiTagField(
+                    ssidValue = tagInfo.wifiInfo.ssid,
+                    passValue = tagInfo.wifiInfo.password,
+                    onSsidValueChange = vm::onWifiTagSsidChange,
+                    onPassValueChange = vm::onWifiTagPasswordChange,
+                    keyboardController = keyboardController
                 )
             }
             TagType.VCARD_TAG -> {
-                OutlinedTextField(
-                    value = tagInfo.vCardInfo.firstName,
-                    onValueChange = vm::onVcardTagFirstNameChange,
-                    label = { Text("vcard firstname") },
-                )
-                OutlinedTextField(
-                    value = tagInfo.vCardInfo.lastName,
-                    onValueChange = vm::onVcardTagLastNameChange,
-                    label = { Text("Tag lastname") },
-                )
-                OutlinedTextField(
-                    value = tagInfo.vCardInfo.phoneNumber,
-                    onValueChange = vm::onVcardTagPhoneNumberChange,
-                    label = { Text("vcard phoneNumber") },
-                )
-                OutlinedTextField(
-                    value = tagInfo.vCardInfo.email,
-                    onValueChange = vm::onVcardTagEmailChange,
-                    label = { Text("vcard email") },
+                VCardTagField(
+                    firstname = tagInfo.vCardInfo.firstName,
+                    lastname = tagInfo.vCardInfo.lastName,
+                    phoneNumber = tagInfo.vCardInfo.phoneNumber,
+                    email = tagInfo.vCardInfo.email,
+                    onFirstnameValueChange = vm::onVcardTagFirstNameChange,
+                    onLastnameValueChange = vm::onVcardTagLastNameChange,
+                    onPhoneNumberValueChange = vm::onVcardTagPhoneNumberChange,
+                    onEmailValueChange = vm::onVcardTagEmailChange,
+                    keyboardController = keyboardController
                 )
             }
         }
@@ -108,10 +102,16 @@ fun CardEmulation(
                     Alignment.CenterHorizontally,
                 ),
         ) {
-            Button(onClick = { vm.initTagEmulation(context, mNfcAdapter) }) {
+            Button(onClick = {
+                vm.initTagEmulation(context, mNfcAdapter)
+                keyboardController?.hide()
+            }) {
                 Text("Emulate Tag")
             }
-            Button(onClick = vm::saveTag) {
+            Button(onClick = {
+                vm.saveTag()
+                keyboardController?.hide()
+            }) {
                 Text("Save Tag")
             }
         }

@@ -33,6 +33,10 @@ class CardEmulationVm(
         _tagInfo.value = _tagInfo.value.copy(tagMsgContent = value)
     }
 
+    fun onUrlTagInfoChange(value: String) {
+        _tagInfo.value = _tagInfo.value.copy(tagUrlContent = value)
+    }
+
     fun onWifiTagSsidChange(value: String) {
         _tagInfo.value =
             _tagInfo.value.copy(
