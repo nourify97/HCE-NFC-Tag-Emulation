@@ -24,7 +24,7 @@ fun Setup(
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        bottomBar = { BottomNavigationBar(navController) }
+        bottomBar = { BottomNavigationBar(navController) },
     ) { innerPadding ->
         val graph =
             navController.createGraph(startDestination = Screen.Home.route) {
@@ -35,14 +35,14 @@ fun Setup(
                     )
                 }
                 composable(route = Screen.TagList.route) {
-                    TagList()
+                    TagList(context = applicationContext)
                 }
             }
 
         NavHost(
             navController = navController,
             graph = graph,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
         )
     }
 }

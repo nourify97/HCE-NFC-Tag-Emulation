@@ -9,7 +9,6 @@ import com.nourify.ndeftagemulation.ui.navigation.Setup
 import com.nourify.ndeftagemulation.ui.theme.NdefTagEmulationTheme
 
 class MainActivity : ComponentActivity() {
-
     private var mNfcAdapter: NfcAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +21,7 @@ class MainActivity : ComponentActivity() {
             NdefTagEmulationTheme {
                 Setup(
                     mNfcAdapter = mNfcAdapter,
-                    applicationContext = applicationContext
+                    applicationContext = applicationContext,
                 )
             }
         }

@@ -22,20 +22,22 @@ import com.nourify.ndeftagemulation.R
 @Composable
 fun NfcCard(text: String) {
     Box(
-        modifier = Modifier
-            .size(300.dp, 200.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color.Blue),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .size(300.dp, 200.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.Blue),
+        contentAlignment = Alignment.Center,
     ) {
         Icon(
             painter = painterResource(id = R.drawable.baseline_nfc_24),
             tint = Color.White,
             contentDescription = "NFC Logo",
-            modifier = Modifier
-                .padding(10.dp)
-                .size(30.dp)
-                .align(Alignment.TopStart)
+            modifier =
+                Modifier
+                    .padding(10.dp)
+                    .size(30.dp)
+                    .align(Alignment.TopStart),
         )
         Text(
             text = text,
@@ -43,7 +45,7 @@ fun NfcCard(text: String) {
             fontSize = 20.sp,
             fontFamily = FontFamily.SansSerif,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.Center)
+            modifier = Modifier.align(Alignment.Center),
         )
     }
 }

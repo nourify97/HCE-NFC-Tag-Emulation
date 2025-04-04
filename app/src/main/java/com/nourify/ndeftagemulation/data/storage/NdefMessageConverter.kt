@@ -5,12 +5,8 @@ import androidx.room.TypeConverter
 
 class NdefMessageConverter {
     @TypeConverter
-    fun fromNdefMessage(ndefMessage: NdefMessage): ByteArray {
-        return ndefMessage.toByteArray()
-    }
+    fun fromNdefMessage(ndefMessage: NdefMessage): ByteArray = ndefMessage.toByteArray()
 
     @TypeConverter
-    fun toNdefMessage(bytes: ByteArray): NdefMessage {
-        return NdefMessage(bytes)
-    }
+    fun toNdefMessage(bytes: ByteArray): NdefMessage = NdefMessage(bytes)
 }

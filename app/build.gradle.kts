@@ -6,6 +6,8 @@ plugins {
     kotlin("plugin.serialization") version "2.0.0"
 }
 
+apply(from = rootProject.file("gradle/ktlint.gradle"))
+
 android {
     namespace = "com.nourify.ndeftagemulation"
     compileSdk = 35
@@ -25,7 +27,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }

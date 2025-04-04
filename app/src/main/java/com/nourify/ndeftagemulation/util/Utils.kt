@@ -30,7 +30,10 @@ fun String.hexStringToByteArray(): ByteArray {
     return result
 }
 
-fun fillByteArrayToFixedDimension(array: ByteArray, fixedSize: Int): ByteArray {
+fun fillByteArrayToFixedDimension(
+    array: ByteArray,
+    fixedSize: Int,
+): ByteArray {
     if (array.size == fixedSize) {
         return array
     }

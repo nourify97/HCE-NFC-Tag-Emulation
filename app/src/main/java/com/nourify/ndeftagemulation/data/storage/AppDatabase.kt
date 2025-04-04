@@ -8,15 +8,17 @@ import androidx.room.TypeConverters
 
 @Database(entities = [NdefTag::class], version = 1, exportSchema = false)
 @TypeConverters(NdefMessageConverter::class)
-abstract class AppDatabase: RoomDatabase() {
+abstract class AppDatabase : RoomDatabase() {
     abstract fun ndefTagDao(): NdefTagDao
 
     companion object {
-        fun create(context: Context): AppDatabase {
-            return Room.databaseBuilder(
-                context = context,
-                klass = AppDatabase::class.java, "app_database",
-            ).fallbackToDestructiveMigration().build()
-        }
+        fun create(context: Context): AppDatabase =
+            Room
+                .databaseBuilder(
+                    context = context,
+                    klass = AppDatabase::class.java,
+                    "app_database",
+                ).fallbackToDestructiveMigration()
+                .build()
     }
 }

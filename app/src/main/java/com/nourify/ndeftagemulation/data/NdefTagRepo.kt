@@ -9,12 +9,9 @@ import org.koin.core.annotation.Single
 class NdefTagRepo(
     private val ndefTagDao: NdefTagDao,
 ) {
-    suspend fun insert(tag: NdefTag)
-        = ndefTagDao.insert(tag)
+    suspend fun insert(tag: NdefTag) = ndefTagDao.insert(tag)
 
-    fun getAll(): Flow<List<NdefTag>>
-        = ndefTagDao.getAll()
+    fun getAll(): Flow<List<NdefTag>> = ndefTagDao.getAll()
 
-    suspend fun delete(tag: NdefTag)
-        = ndefTagDao.delete(tag)
+    suspend fun delete(tag: NdefTag) = ndefTagDao.delete(tag)
 }

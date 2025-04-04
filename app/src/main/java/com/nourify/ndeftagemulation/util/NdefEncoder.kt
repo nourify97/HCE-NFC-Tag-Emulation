@@ -11,10 +11,7 @@ import java.nio.charset.Charset
 
 @Single
 class NdefEncoder {
-
-    fun encodeText(text: String): NdefMessage {
-        return NdefMessage(createTextRecord(text = text, id = NDEF_ID))
-    }
+    fun encodeText(text: String): NdefMessage = NdefMessage(createTextRecord(text = text, id = NDEF_ID))
 
     fun encodeUrl(url: String): NdefMessage {
         // TODO change for URL
@@ -24,26 +21,29 @@ class NdefEncoder {
     fun encodeWifi(wifiInfo: WifiInfo): NdefMessage {
         val payload = generateNdefPayload(wifiInfo.ssid, wifiInfo.password)
 
-        val mimeRecord = NdefRecord(
-            NdefRecord.TNF_MIME_MEDIA,
-            NFC_TOKEN_MIME_TYPE.toByteArray(Charset.forName(DEFAULT_CHARSET)),
-            ByteArray(0),
-            payload
-        )
+        val mimeRecord =
+            NdefRecord(
+                NdefRecord.TNF_MIME_MEDIA,
+                NFC_TOKEN_MIME_TYPE.toByteArray(Charset.forName(DEFAULT_CHARSET)),
+                ByteArray(0),
+                payload,
+            )
 
         return NdefMessage(mimeRecord)
     }
 
-    fun encodeVcard(vcardInfo: VcardInfo): NdefMessage {
-        return createVCardNdefMessage(
+    fun encodeVcard(vcardInfo: VcardInfo): NdefMessage =
+        createVCardNdefMessage(
             firstName = vcardInfo.firstName,
             lastName = vcardInfo.lastName,
             phoneNumber = vcardInfo.phoneNumber,
-            email = vcardInfo.email
+            email = vcardInfo.email,
         )
-    }
 
-    private fun generateNdefPayload(ssid: String, key: String): ByteArray {
+    private fun generateNdefPayload(
+        ssid: String,
+        key: String,
+    ): ByteArray {
         val ssidBytes = ssid.toByteArray()
         val keyBytes = key.toByteArray()
 
@@ -68,7 +68,11 @@ class NdefEncoder {
         return buffer.array()
     }
 
-    private fun createTextRecord(language: String = DEFAULT_LANGUAGE, text: String, id: ByteArray): NdefRecord {
+    private fun createTextRecord(
+        language: String = DEFAULT_LANGUAGE,
+        text: String,
+        id: ByteArray,
+    ): NdefRecord {
         val languageBytes: ByteArray
         val textBytes: ByteArray
         try {
@@ -97,27 +101,29 @@ class NdefEncoder {
         firstName: String,
         lastName: String,
         phoneNumber: String,
-        email: String
+        email: String,
     ): NdefMessage {
-        val vCardString = """
-        BEGIN:VCARD
-        VERSION:3.0
-        N:$lastName;$firstName;;;;
-        FN:$firstName $lastName
-        TEL;TYPE=cell:$phoneNumber
-        EMAIL:$email
-        END:VCARD
-        """.trimIndent()
+        val vCardString =
+            """
+            BEGIN:VCARD
+            VERSION:3.0
+            N:$lastName;$firstName;;;;
+            FN:$firstName $lastName
+            TEL;TYPE=cell:$phoneNumber
+            EMAIL:$email
+            END:VCARD
+            """.trimIndent()
 
         val mimeType = "text/x-vcard"
         val vCardBytes = vCardString.toByteArray(Charset.forName(DEFAULT_CHARSET_NAME))
 
-        val mimeRecord = NdefRecord(
-            NdefRecord.TNF_MIME_MEDIA,
-            mimeType.toByteArray(Charset.forName(DEFAULT_CHARSET)),
-            ByteArray(0),
-            vCardBytes
-        )
+        val mimeRecord =
+            NdefRecord(
+                NdefRecord.TNF_MIME_MEDIA,
+                mimeType.toByteArray(Charset.forName(DEFAULT_CHARSET)),
+                ByteArray(0),
+                vCardBytes,
+            )
 
         return NdefMessage(mimeRecord)
     }
@@ -139,5 +145,4 @@ class NdefEncoder {
         private const val AUTH_TYPE_WPA2_PSK: Short = 0x0020
         private const val NETWORK_KEY_FIELD_ID: Short = 0x1027
     }
-
 }

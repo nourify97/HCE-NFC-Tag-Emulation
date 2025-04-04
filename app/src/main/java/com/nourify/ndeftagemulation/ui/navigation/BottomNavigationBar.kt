@@ -16,13 +16,14 @@ fun BottomNavigationBar(
     navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
-    val selectedNavigationIndex = rememberSaveable {
-        mutableIntStateOf(0)
-    }
+    val selectedNavigationIndex =
+        rememberSaveable {
+            mutableIntStateOf(0)
+        }
 
     NavigationBar(
         modifier = modifier,
-        containerColor = Color.White
+        containerColor = Color.White,
     ) {
         navigationItems.forEachIndexed { index, item ->
             NavigationBarItem(
@@ -37,9 +38,12 @@ fun BottomNavigationBar(
                 label = {
                     Text(
                         item.title,
-                        color = if (index == selectedNavigationIndex.intValue)
-                            Color.Black
-                        else Color.Gray
+                        color =
+                            if (index == selectedNavigationIndex.intValue) {
+                                Color.Black
+                            } else {
+                                Color.Gray
+                            },
                     )
                 },
             )

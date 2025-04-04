@@ -4,33 +4,22 @@ import android.content.Context
 import android.nfc.NfcAdapter
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.nourify.ndeftagemulation.ui.components.NfcCard
@@ -42,7 +31,7 @@ fun CardEmulation(
     context: Context,
     mNfcAdapter: NfcAdapter?,
     modifier: Modifier = Modifier,
-    vm: CardEmulationVm = koinViewModel()
+    vm: CardEmulationVm = koinViewModel(),
 ) {
     val tagInfo by vm.tagInfo.collectAsState()
     val emulationState by vm.cardEmulationState.collectAsState()
@@ -52,7 +41,7 @@ fun CardEmulation(
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
+        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
     ) {
         NfcCard(tagInfo.tagMsgContent)
         Spacer(Modifier.height(12.dp))
@@ -62,7 +51,7 @@ fun CardEmulation(
             onExpanded = { expanded = it },
             onSelectedTagType = vm::onTagTypeChange,
         )
-        when(tagInfo.tagType) {
+        when (tagInfo.tagType) {
             TagType.TEXT_TAG -> {
                 OutlinedTextField(
                     value = tagInfo.tagMsgContent,
@@ -113,9 +102,11 @@ fun CardEmulation(
             }
         }
         Row(
-            horizontalArrangement = Arrangement.spacedBy(
-                16.dp, Alignment.CenterHorizontally
-            )
+            horizontalArrangement =
+                Arrangement.spacedBy(
+                    16.dp,
+                    Alignment.CenterHorizontally,
+                ),
         ) {
             Button(onClick = { vm.initTagEmulation(context, mNfcAdapter) }) {
                 Text("Emulate Tag")
@@ -127,7 +118,7 @@ fun CardEmulation(
         Spacer(Modifier.height(16.dp))
     }
 
-    when(emulationState) {
+    when (emulationState) {
         CardEmulationState.EmptyTextField -> makeToast(context, "The text field is empty")
         CardEmulationState.NfcDisabled -> makeToast(context, "Please activate the NFC")
         CardEmulationState.NoHceSupport -> makeToast(context, "This device doesn't support tag emulation")
@@ -144,6 +135,10 @@ fun CardEmulation(
     }
 }
 
-private fun makeToast(context: Context, msg: String, duration: Int = Toast.LENGTH_SHORT) {
+private fun makeToast(
+    context: Context,
+    msg: String,
+    duration: Int = Toast.LENGTH_SHORT,
+) {
     Toast.makeText(context, msg, duration).show()
 }

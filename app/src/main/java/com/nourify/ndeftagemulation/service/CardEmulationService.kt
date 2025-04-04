@@ -17,7 +17,6 @@ import java.math.BigInteger
  * The class uses the AID D2760000850101
  */
 class CardEmulationService : HostApduService() {
-
     private val ndefEncoder by inject<NdefEncoder>()
 
     // In the scenario that we have done a CC read, the same byte[] match
@@ -26,12 +25,17 @@ class CardEmulationService : HostApduService() {
 
     private var ndefUri = ndefEncoder.encodeText("Ciao, come va?")
     private var ndefUriBytes = ndefUri.toByteArray()
-    private var ndefUriLen = fillByteArrayToFixedDimension(
-        BigInteger.valueOf(ndefUriBytes.size.toLong()).toByteArray(),
-        2,
-    )
+    private var ndefUriLen =
+        fillByteArrayToFixedDimension(
+            BigInteger.valueOf(ndefUriBytes.size.toLong()).toByteArray(),
+            2,
+        )
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         if (intent?.hasExtra("ndefMessage") == true) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 intent.getParcelableExtra("ndefMessage", NdefMessage::class.java)
@@ -40,10 +44,11 @@ class CardEmulationService : HostApduService() {
                 intent.getParcelableExtra("ndefMessage") as NdefMessage?
             }?.let {
                 ndefUriBytes = it.toByteArray()
-                ndefUriLen = fillByteArrayToFixedDimension(
-                    BigInteger.valueOf(ndefUriBytes.size.toLong()).toByteArray(),
-                    2,
-                )
+                ndefUriLen =
+                    fillByteArrayToFixedDimension(
+                        BigInteger.valueOf(ndefUriBytes.size.toLong()).toByteArray(),
+                        2,
+                    )
 
                 Log.i(TAG, "onStartCommand() | NDEF$it")
             } ?: run {
@@ -54,7 +59,10 @@ class CardEmulationService : HostApduService() {
         return START_STICKY
     }
 
-    override fun processCommandApdu(commandApdu: ByteArray, extras: Bundle?): ByteArray {
+    override fun processCommandApdu(
+        commandApdu: ByteArray,
+        extras: Bundle?,
+    ): ByteArray {
         //
         // The following flow is based on Appendix E "Example of Mapping Version 2.0 Command Flow"
         // in the NFC Forum specification
@@ -156,85 +164,100 @@ class CardEmulationService : HostApduService() {
     companion object {
         private const val TAG = "HostApduService"
 
-        private val APDU_SELECT = byteArrayOf(
-            0x00.toByte(), // CLA	- Class - Class of instruction
-            0xA4.toByte(), // INS	- Instruction - Instruction code
-            0x04.toByte(), // P1	- Parameter 1 - Instruction parameter 1
-            0x00.toByte(), // P2	- Parameter 2 - Instruction parameter 2
-            0x07.toByte(), // Lc field	- Number of bytes present in the data field of the command
-            0xD2.toByte(),
-            0x76.toByte(),
-            0x00.toByte(),
-            0x00.toByte(),
-            0x85.toByte(),
-            0x01.toByte(),
-            0x01.toByte(), // NDEF Tag Application name
-            0x00.toByte(), // Le field	- Maximum number of bytes expected in the data field of the response to the command
-        )
+        private val APDU_SELECT =
+            byteArrayOf(
+                0x00.toByte(), // CLA	- Class - Class of instruction
+                0xA4.toByte(), // INS	- Instruction - Instruction code
+                0x04.toByte(), // P1	- Parameter 1 - Instruction parameter 1
+                0x00.toByte(), // P2	- Parameter 2 - Instruction parameter 2
+                0x07.toByte(), // Lc field	- Number of bytes present in the data field of the command
+                0xD2.toByte(),
+                0x76.toByte(),
+                0x00.toByte(),
+                0x00.toByte(),
+                0x85.toByte(),
+                0x01.toByte(),
+                0x01.toByte(), // NDEF Tag Application name
+                0x00.toByte(), // Le field	- Maximum number of bytes expected in the data field of the response to the command
+            )
 
-        private val CAPABILITY_CONTAINER_OK = byteArrayOf(
-            0x00.toByte(), // CLA	- Class - Class of instruction
-            0xa4.toByte(), // INS	- Instruction - Instruction code
-            0x00.toByte(), // P1	- Parameter 1 - Instruction parameter 1
-            0x0c.toByte(), // P2	- Parameter 2 - Instruction parameter 2
-            0x02.toByte(), // Lc field	- Number of bytes present in the data field of the command
-            0xe1.toByte(),
-            0x03.toByte(), // file identifier of the CC file
-        )
+        private val CAPABILITY_CONTAINER_OK =
+            byteArrayOf(
+                0x00.toByte(), // CLA	- Class - Class of instruction
+                0xa4.toByte(), // INS	- Instruction - Instruction code
+                0x00.toByte(), // P1	- Parameter 1 - Instruction parameter 1
+                0x0c.toByte(), // P2	- Parameter 2 - Instruction parameter 2
+                0x02.toByte(), // Lc field	- Number of bytes present in the data field of the command
+                0xe1.toByte(),
+                0x03.toByte(), // file identifier of the CC file
+            )
 
-        private val READ_CAPABILITY_CONTAINER = byteArrayOf(
-            0x00.toByte(), // CLA	- Class - Class of instruction
-            0xb0.toByte(), // INS	- Instruction - Instruction code
-            0x00.toByte(), // P1	- Parameter 1 - Instruction parameter 1
-            0x00.toByte(), // P2	- Parameter 2 - Instruction parameter 2
-            0x0f.toByte(), // Lc field	- Number of bytes present in the data field of the command
-        )
+        private val READ_CAPABILITY_CONTAINER =
+            byteArrayOf(
+                0x00.toByte(), // CLA	- Class - Class of instruction
+                0xb0.toByte(), // INS	- Instruction - Instruction code
+                0x00.toByte(), // P1	- Parameter 1 - Instruction parameter 1
+                0x00.toByte(), // P2	- Parameter 2 - Instruction parameter 2
+                0x0f.toByte(), // Lc field	- Number of bytes present in the data field of the command
+            )
 
-        private val READ_CAPABILITY_CONTAINER_RESPONSE = byteArrayOf(
-            0x00.toByte(), 0x0F.toByte(), // CCLEN length of the CC file
-            0x20.toByte(), // Mapping Version 2.0
-            0x00.toByte(), 0x3B.toByte(), // MLe maximum
-            0x00.toByte(), 0x34.toByte(), // MLc maximum
-            0x04.toByte(), // T field of the NDEF File Control TLV
-            0x06.toByte(), // L field of the NDEF File Control TLV
-            0xE1.toByte(), 0x04.toByte(), // File Identifier of NDEF file
-            0x00.toByte(), 0xFF.toByte(), // Maximum NDEF file size of 65534 bytes
-            0x00.toByte(), // Read access without any security
-            0xFF.toByte(), // Write access without any security
-            0x90.toByte(), 0x00.toByte(), // A_OKAY
-        )
+        private val READ_CAPABILITY_CONTAINER_RESPONSE =
+            byteArrayOf(
+                0x00.toByte(),
+                0x0F.toByte(), // CCLEN length of the CC file
+                0x20.toByte(), // Mapping Version 2.0
+                0x00.toByte(),
+                0x3B.toByte(), // MLe maximum
+                0x00.toByte(),
+                0x34.toByte(), // MLc maximum
+                0x04.toByte(), // T field of the NDEF File Control TLV
+                0x06.toByte(), // L field of the NDEF File Control TLV
+                0xE1.toByte(),
+                0x04.toByte(), // File Identifier of NDEF file
+                0x00.toByte(),
+                0xFF.toByte(), // Maximum NDEF file size of 65534 bytes
+                0x00.toByte(), // Read access without any security
+                0xFF.toByte(), // Write access without any security
+                0x90.toByte(),
+                0x00.toByte(), // A_OKAY
+            )
 
-        private val NDEF_SELECT_OK = byteArrayOf(
-            0x00.toByte(), // CLA	- Class - Class of instruction
-            0xa4.toByte(), // Instruction byte (INS) for Select command
-            0x00.toByte(), // Parameter byte (P1), select by identifier
-            0x0c.toByte(), // Parameter byte (P1), select by identifier
-            0x02.toByte(), // Lc field	- Number of bytes present in the data field of the command
-            0xE1.toByte(),
-            0x04.toByte(), // file identifier of the NDEF file retrieved from the CC file
-        )
+        private val NDEF_SELECT_OK =
+            byteArrayOf(
+                0x00.toByte(), // CLA	- Class - Class of instruction
+                0xa4.toByte(), // Instruction byte (INS) for Select command
+                0x00.toByte(), // Parameter byte (P1), select by identifier
+                0x0c.toByte(), // Parameter byte (P1), select by identifier
+                0x02.toByte(), // Lc field	- Number of bytes present in the data field of the command
+                0xE1.toByte(),
+                0x04.toByte(), // file identifier of the NDEF file retrieved from the CC file
+            )
 
-        private val NDEF_READ_BINARY = byteArrayOf(
-            0x00.toByte(), // Class byte (CLA)
-            0xb0.toByte(), // Instruction byte (INS) for ReadBinary command
-        )
+        private val NDEF_READ_BINARY =
+            byteArrayOf(
+                0x00.toByte(), // Class byte (CLA)
+                0xb0.toByte(), // Instruction byte (INS) for ReadBinary command
+            )
 
-        private val NDEF_READ_BINARY_NLEN = byteArrayOf(
-            0x00.toByte(), // Class byte (CLA)
-            0xb0.toByte(), // Instruction byte (INS) for ReadBinary command
-            0x00.toByte(),
-            0x00.toByte(), // Parameter byte (P1, P2), offset inside the CC file
-            0x02.toByte(), // Le field
-        )
+        private val NDEF_READ_BINARY_NLEN =
+            byteArrayOf(
+                0x00.toByte(), // Class byte (CLA)
+                0xb0.toByte(), // Instruction byte (INS) for ReadBinary command
+                0x00.toByte(),
+                0x00.toByte(), // Parameter byte (P1, P2), offset inside the CC file
+                0x02.toByte(), // Le field
+            )
 
-        private val A_OKAY = byteArrayOf(
-            0x90.toByte(), // SW1	Status byte 1 - Command processing status
-            0x00.toByte(), // SW2	Status byte 2 - Command processing qualifier
-        )
+        private val A_OKAY =
+            byteArrayOf(
+                0x90.toByte(), // SW1	Status byte 1 - Command processing status
+                0x00.toByte(), // SW2	Status byte 2 - Command processing qualifier
+            )
 
-        private val A_ERROR = byteArrayOf(
-            0x6A.toByte(), // SW1	Status byte 1 - Command processing status
-            0x82.toByte(), // SW2	Status byte 2 - Command processing qualifier
-        )
+        private val A_ERROR =
+            byteArrayOf(
+                0x6A.toByte(), // SW1	Status byte 1 - Command processing status
+                0x82.toByte(), // SW2	Status byte 2 - Command processing qualifier
+            )
     }
 }
