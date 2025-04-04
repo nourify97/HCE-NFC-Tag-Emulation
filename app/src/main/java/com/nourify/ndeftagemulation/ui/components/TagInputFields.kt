@@ -23,11 +23,12 @@ fun TextTagField(
         onValueChange = onValueChange,
         label = { Text("Tag content") },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Done,
-            keyboardType = KeyboardType.Text,
-        ),
-        keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() })
+        keyboardOptions =
+            KeyboardOptions(
+                imeAction = ImeAction.Done,
+                keyboardType = KeyboardType.Text,
+            ),
+        keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }),
     )
 }
 
@@ -44,11 +45,12 @@ fun UrlTagField(
         onValueChange = onValueChange,
         label = { Text("Tag content") },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Done,
-            keyboardType = KeyboardType.Uri,
-        ),
-        keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() })
+        keyboardOptions =
+            KeyboardOptions(
+                imeAction = ImeAction.Done,
+                keyboardType = KeyboardType.Uri,
+            ),
+        keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }),
     )
 }
 
@@ -64,20 +66,22 @@ fun WifiTagField(
         value = ssidValue,
         onValueChange = onSsidValueChange,
         label = { Text("Wifi ssid") },
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Next,
-            keyboardType = KeyboardType.Text,
-        ),
+        keyboardOptions =
+            KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Text,
+            ),
     )
     OutlinedTextField(
         value = passValue,
         onValueChange = onPassValueChange,
         label = { Text("Wifi password") },
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Done,
-            keyboardType = KeyboardType.Password,
-        ),
-        keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() })
+        keyboardOptions =
+            KeyboardOptions(
+                imeAction = ImeAction.Done,
+                keyboardType = KeyboardType.Password,
+            ),
+        keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }),
     )
 }
 
@@ -97,37 +101,41 @@ fun VCardTagField(
         value = firstname,
         onValueChange = onFirstnameValueChange,
         label = { Text("vcard firstname") },
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Next,
-            keyboardType = KeyboardType.Text,
-        ),
+        keyboardOptions =
+            KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Text,
+            ),
     )
     OutlinedTextField(
         value = lastname,
         onValueChange = onLastnameValueChange,
         label = { Text("Tag lastname") },
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Next,
-            keyboardType = KeyboardType.Text,
-        )
+        keyboardOptions =
+            KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Text,
+            ),
     )
     OutlinedTextField(
         value = phoneNumber,
         onValueChange = onPhoneNumberValueChange,
         label = { Text("vcard phoneNumber") },
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Next,
-            keyboardType = KeyboardType.Phone,
-        )
+        keyboardOptions =
+            KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Phone,
+            ),
     )
     OutlinedTextField(
         value = email,
         onValueChange = onEmailValueChange,
         label = { Text("vcard email") },
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Done,
-            keyboardType = KeyboardType.Email,
-        ),
-        keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() })
+        keyboardOptions =
+            KeyboardOptions(
+                imeAction = ImeAction.Done,
+                keyboardType = KeyboardType.Email,
+            ),
+        keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }),
     )
 }

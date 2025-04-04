@@ -34,6 +34,7 @@ import org.koin.androidx.compose.koinViewModel
 fun CardEmulation(
     context: Context,
     mNfcAdapter: NfcAdapter?,
+    resetCurrentTag: () -> Unit,
     modifier: Modifier = Modifier,
     vm: CardEmulationVm = koinViewModel(),
 ) {
@@ -62,14 +63,14 @@ fun CardEmulation(
                 TextTagField(
                     value = tagInfo.tagMsgContent,
                     onValueChange = vm::onMsgTagInfoChange,
-                    keyboardController = keyboardController
+                    keyboardController = keyboardController,
                 )
             }
             TagType.URL_TAG -> {
                 UrlTagField(
                     value = tagInfo.tagMsgContent,
                     onValueChange = vm::onUrlTagInfoChange,
-                    keyboardController = keyboardController
+                    keyboardController = keyboardController,
                 )
             }
             TagType.WIFI_TAG -> {
@@ -78,7 +79,7 @@ fun CardEmulation(
                     passValue = tagInfo.wifiInfo.password,
                     onSsidValueChange = vm::onWifiTagSsidChange,
                     onPassValueChange = vm::onWifiTagPasswordChange,
-                    keyboardController = keyboardController
+                    keyboardController = keyboardController,
                 )
             }
             TagType.VCARD_TAG -> {
@@ -91,7 +92,7 @@ fun CardEmulation(
                     onLastnameValueChange = vm::onVcardTagLastNameChange,
                     onPhoneNumberValueChange = vm::onVcardTagPhoneNumberChange,
                     onEmailValueChange = vm::onVcardTagEmailChange,
-                    keyboardController = keyboardController
+                    keyboardController = keyboardController,
                 )
             }
         }
@@ -104,13 +105,12 @@ fun CardEmulation(
         ) {
             Button(onClick = {
                 vm.initTagEmulation(context, mNfcAdapter)
-                keyboardController?.hide()
+                resetCurrentTag()
             }) {
                 Text("Emulate Tag")
             }
             Button(onClick = {
                 vm.saveTag()
-                keyboardController?.hide()
             }) {
                 Text("Save Tag")
             }

@@ -19,6 +19,9 @@ import com.nourify.ndeftagemulation.ui.screens.taglist.TagList
 fun Setup(
     mNfcAdapter: NfcAdapter?,
     applicationContext: Context,
+    currentEmulatedTagId: Long?,
+    resetCurrentTag: () -> Unit,
+    updateCurrentEmulatedTag: (Long) -> Unit,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
@@ -31,11 +34,16 @@ fun Setup(
                 composable(route = Screen.Home.route) {
                     CardEmulation(
                         mNfcAdapter = mNfcAdapter,
+                        resetCurrentTag = resetCurrentTag,
                         context = applicationContext,
                     )
                 }
                 composable(route = Screen.TagList.route) {
-                    TagList(context = applicationContext)
+                    TagList(
+                        context = applicationContext,
+                        currentEmulatedTagId = currentEmulatedTagId,
+                        updateCurrentEmulatedTag = updateCurrentEmulatedTag,
+                    )
                 }
             }
 
