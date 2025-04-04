@@ -23,24 +23,25 @@ fun TagTypeItem(
     onSelectedTagType: (Int) -> Unit,
 ) {
     Box(
-        modifier = modifier
-            .padding(start = 32.dp, end = 32.dp)
+        modifier =
+            modifier
+                .padding(start = 32.dp, end = 32.dp),
     ) {
         ExposedDropdownMenuBox(
             expanded = expanded,
-            onExpandedChange = onExpanded
+            onExpandedChange = onExpanded,
         ) {
             TextField(
                 value = TagType.entries[selectedTagType].name,
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier = Modifier.menuAnchor()
+                modifier = Modifier.menuAnchor(),
             )
 
             ExposedDropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { onExpanded(false) }
+                onDismissRequest = { onExpanded(false) },
             ) {
                 TagType.entries.forEach { item ->
                     DropdownMenuItem(
@@ -48,7 +49,7 @@ fun TagTypeItem(
                         onClick = {
                             onSelectedTagType(item.ordinal)
                             onExpanded(false)
-                        }
+                        },
                     )
                 }
             }

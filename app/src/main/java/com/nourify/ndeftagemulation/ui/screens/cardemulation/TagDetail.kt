@@ -36,5 +36,8 @@ data class VcardInfo(
 )
 
 enum class TagType {
-    TEXT_TAG, URL_TAG, WIFI_TAG, VCARD_TAG
+    TEXT_TAG,
+    URL_TAG,
+    WIFI_TAG,
+    VCARD_TAG,
 }

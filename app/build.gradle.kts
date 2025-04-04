@@ -2,8 +2,11 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.gradle.ksp)
     kotlin("plugin.serialization") version "2.0.0"
 }
+
+apply(from = rootProject.file("gradle/ktlint.gradle"))
 
 android {
     namespace = "com.nourify.ndeftagemulation"
@@ -24,7 +27,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -42,7 +45,22 @@ android {
 
 dependencies {
 
+    // kotlin serialization
     implementation(libs.kotlinx.serialization.json)
+
+    // compose nav
+    implementation(libs.androidx.navigation.compose)
+
+    // dependency injection
+    implementation(libs.koin.android)
+    implementation(libs.koin.annotations)
+    implementation(libs.koin.androidx.compose)
+    ksp(libs.koin.ksp.compiler)
+
+    // room db
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

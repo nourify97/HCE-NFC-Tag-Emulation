@@ -1,21 +1,28 @@
 package com.nourify.ndeftagemulation.ui.screens.cardemulation
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
-import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.nourify.ndeftagemulation.data.NdefTagRepo
+import com.nourify.ndeftagemulation.data.storage.NdefTag
 import com.nourify.ndeftagemulation.service.CardEmulationService
+import com.nourify.ndeftagemulation.util.NdefEncoder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import kotlinx.coroutines.launch
+import org.koin.android.annotation.KoinViewModel
 
-class CardEmulationVm: ViewModel() {
-
+@KoinViewModel
+class CardEmulationVm(
+    private val ndefEncoder: NdefEncoder,
+    private val ndefTagRepo: NdefTagRepo,
+) : ViewModel() {
     private val _tagInfo = MutableStateFlow(TagDetail.toInitialState())
     val tagInfo: StateFlow<TagDetail> = _tagInfo.asStateFlow()
 
@@ -27,15 +34,17 @@ class CardEmulationVm: ViewModel() {
     }
 
     fun onWifiTagSsidChange(value: String) {
-        _tagInfo.value = _tagInfo.value.copy(
-            wifiInfo = _tagInfo.value.wifiInfo.copy(ssid = value)
-        )
+        _tagInfo.value =
+            _tagInfo.value.copy(
+                wifiInfo = _tagInfo.value.wifiInfo.copy(ssid = value),
+            )
     }
 
     fun onWifiTagPasswordChange(value: String) {
-        _tagInfo.value = _tagInfo.value.copy(
-            wifiInfo = _tagInfo.value.wifiInfo.copy(password = value)
-        )
+        _tagInfo.value =
+            _tagInfo.value.copy(
+                wifiInfo = _tagInfo.value.wifiInfo.copy(password = value),
+            )
     }
 
     fun onTagTypeChange(value: Int) {
@@ -43,41 +52,46 @@ class CardEmulationVm: ViewModel() {
     }
 
     fun onVcardTagFirstNameChange(value: String) {
-        _tagInfo.value = _tagInfo.value.copy(
-            vCardInfo = _tagInfo.value.vCardInfo.copy(firstName = value)
-        )
+        _tagInfo.value =
+            _tagInfo.value.copy(
+                vCardInfo = _tagInfo.value.vCardInfo.copy(firstName = value),
+            )
     }
 
     fun onVcardTagLastNameChange(value: String) {
-        _tagInfo.value = _tagInfo.value.copy(
-            vCardInfo = _tagInfo.value.vCardInfo.copy(lastName = value)
-        )
+        _tagInfo.value =
+            _tagInfo.value.copy(
+                vCardInfo = _tagInfo.value.vCardInfo.copy(lastName = value),
+            )
     }
 
     fun onVcardTagPhoneNumberChange(value: String) {
-        _tagInfo.value = _tagInfo.value.copy(
-            vCardInfo = _tagInfo.value.vCardInfo.copy(phoneNumber = value)
-        )
+        _tagInfo.value =
+            _tagInfo.value.copy(
+                vCardInfo = _tagInfo.value.vCardInfo.copy(phoneNumber = value),
+            )
     }
 
     fun onVcardTagEmailChange(value: String) {
-        _tagInfo.value = _tagInfo.value.copy(
-            vCardInfo = _tagInfo.value.vCardInfo.copy(email = value)
-        )
+        _tagInfo.value =
+            _tagInfo.value.copy(
+                vCardInfo = _tagInfo.value.vCardInfo.copy(email = value),
+            )
     }
 
-    fun initTagEmulation(context: Context, nfcAdapter: NfcAdapter?) {
-        val intent = Intent(context, CardEmulationService::class.java)
+    fun initTagEmulation(
+        context: Context,
+        nfcAdapter: NfcAdapter?,
+    ) {
+        var ndefMessage: NdefMessage? = null
 
         if (checkNfcSupport(context, nfcAdapter)) {
-            when(_tagInfo.value.tagType) {
+            when (_tagInfo.value.tagType) {
                 TagType.TEXT_TAG -> {
-                    Log.d(this.javaClass.name, "text")
-
                     if (_tagInfo.value.tagMsgContent.isBlank()) {
                         _cardEmulationState.value = CardEmulationState.EmptyTextField
                     } else {
-                        intent.putExtra("ndefMessage", _tagInfo.value.tagMsgContent)
+                        ndefMessage = ndefEncoder.encodeText(_tagInfo.value.tagMsgContent)
                     }
                 }
                 TagType.URL_TAG -> {
@@ -85,27 +99,40 @@ class CardEmulationVm: ViewModel() {
                         // TODO process URL validity
                         _cardEmulationState.value = CardEmulationState.EmptyTextField
                     } else {
-                        intent.putExtra("ndefUrl", _tagInfo.value.tagUrlContent)
+                        ndefMessage = ndefEncoder.encodeUrl(_tagInfo.value.tagUrlContent)
                     }
                 }
                 TagType.WIFI_TAG -> {
-                    if (_tagInfo.value.wifiInfo.ssid.isBlank() || _tagInfo.value.wifiInfo.password.isBlank()) {
+                    if (_tagInfo.value.wifiInfo.ssid
+                            .isBlank() ||
+                        _tagInfo.value.wifiInfo.password
+                            .isBlank()
+                    ) {
                         _cardEmulationState.value = CardEmulationState.EmptyTextField
                     } else {
-                        intent.putExtra("ndefWifi", Json.encodeToString(_tagInfo.value.wifiInfo))
+                        ndefMessage = ndefEncoder.encodeWifi(_tagInfo.value.wifiInfo)
                     }
                 }
                 TagType.VCARD_TAG -> {
-                    if (_tagInfo.value.vCardInfo.firstName.isBlank() || _tagInfo.value.vCardInfo.phoneNumber.isBlank()) {
+                    if (_tagInfo.value.vCardInfo.firstName
+                            .isBlank() ||
+                        _tagInfo.value.vCardInfo.phoneNumber
+                            .isBlank()
+                    ) {
                         _cardEmulationState.value = CardEmulationState.EmptyTextField
                     } else {
-                        intent.putExtra("ndefVcard", Json.encodeToString(_tagInfo.value.vCardInfo))
+                        ndefMessage = ndefEncoder.encodeVcard(_tagInfo.value.vCardInfo)
                     }
                 }
             }
 
             try {
-                context.startService(intent)
+                context.startService(
+                    Intent(context, CardEmulationService::class.java).apply {
+                        putExtra("ndefMessage", ndefMessage)
+                    },
+                )
+
                 // emulation started successfully
                 _cardEmulationState.value = CardEmulationState.HceServiceStartSuccess
             } catch (e: Exception) {
@@ -114,11 +141,83 @@ class CardEmulationVm: ViewModel() {
         }
     }
 
+    fun saveTag() {
+        viewModelScope.launch(Dispatchers.IO) {
+            when (_tagInfo.value.tagType) {
+                TagType.TEXT_TAG -> {
+                    if (_tagInfo.value.tagMsgContent.isBlank()) {
+                        _cardEmulationState.value = CardEmulationState.EmptyTextField
+                    } else {
+                        ndefTagRepo.insert(
+                            tag =
+                                NdefTag(
+                                    tagType = TagType.TEXT_TAG,
+                                    name = _tagInfo.value.tagMsgContent,
+                                    ndefMessage = ndefEncoder.encodeText(_tagInfo.value.tagMsgContent),
+                                ),
+                        )
+                    }
+                }
+                TagType.URL_TAG -> {
+                    if (_tagInfo.value.tagUrlContent.isBlank()) {
+                        // TODO process URL validity
+                        _cardEmulationState.value = CardEmulationState.EmptyTextField
+                    } else {
+                        ndefTagRepo.insert(
+                            tag =
+                                NdefTag(
+                                    tagType = TagType.URL_TAG,
+                                    name = _tagInfo.value.tagUrlContent,
+                                    ndefMessage = ndefEncoder.encodeUrl(_tagInfo.value.tagUrlContent),
+                                ),
+                        )
+                    }
+                }
+                TagType.WIFI_TAG -> {
+                    if (_tagInfo.value.wifiInfo.ssid
+                            .isBlank() ||
+                        _tagInfo.value.wifiInfo.password
+                            .isBlank()
+                    ) {
+                        _cardEmulationState.value = CardEmulationState.EmptyTextField
+                    } else {
+                        ndefTagRepo.insert(
+                            tag =
+                                NdefTag(
+                                    tagType = TagType.WIFI_TAG,
+                                    name = _tagInfo.value.wifiInfo.ssid,
+                                    ndefMessage = ndefEncoder.encodeWifi(_tagInfo.value.wifiInfo),
+                                ),
+                        )
+                    }
+                }
+                TagType.VCARD_TAG -> {
+                    if (_tagInfo.value.vCardInfo.firstName
+                            .isBlank() ||
+                        _tagInfo.value.vCardInfo.phoneNumber
+                            .isBlank()
+                    ) {
+                        _cardEmulationState.value = CardEmulationState.EmptyTextField
+                    } else {
+                        ndefTagRepo.insert(
+                            tag =
+                                NdefTag(
+                                    tagType = TagType.VCARD_TAG,
+                                    name = _tagInfo.value.vCardInfo.firstName,
+                                    ndefMessage = ndefEncoder.encodeVcard(_tagInfo.value.vCardInfo),
+                                ),
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     fun checkNfcSupport(
         context: Context,
         nfcAdapter: NfcAdapter?,
-    ): Boolean {
-        return when {
+    ): Boolean =
+        when {
             nfcAdapter?.isEnabled == false -> {
                 _cardEmulationState.value = CardEmulationState.NfcDisabled
                 false
@@ -132,7 +231,6 @@ class CardEmulationVm: ViewModel() {
                 true
             }
         }
-    }
 
     fun resetCardEmulationStat() = _cardEmulationState.run { value = CardEmulationState.Idle }
 }
