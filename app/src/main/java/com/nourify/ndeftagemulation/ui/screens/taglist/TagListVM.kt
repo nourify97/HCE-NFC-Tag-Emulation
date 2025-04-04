@@ -67,23 +67,36 @@ class TagListVM(
         id: Long,
         isVisible: Boolean,
     ) {
-        _savedTags.indexOfFirst { it.id == id }.let { index ->
-            if (index == -1) {
-                Log.e(this.javaClass.name, "updateActionVisibility: Tag with ID $id not found")
-            } else {
-                _savedTags[index] = _savedTags[index].copy(isOptionsRevealed = isVisible)
-            }
+        getTagIndexById(id)?.let {
+            _savedTags[it] = _savedTags[it].copy(isOptionsRevealed = isVisible)
         }
     }
 
     fun initTagEmulation(
-        context: Context,
+        tagId: Long,
         ndefMessage: NdefMessage,
-    ) {
-        context.startService(
-            Intent(context, CardEmulationService::class.java).apply {
-                putExtra("ndefMessage", ndefMessage)
-            },
-        )
+        context: Context,
+    ): Boolean =
+        try {
+            context.startService(
+                Intent(context, CardEmulationService::class.java).apply {
+                    putExtra("ndefMessage", ndefMessage)
+                },
+            )
+            true
+        } catch (e: Exception) {
+            Log.e(this.javaClass.name, "initTagEmulation: Tag with ID $tagId fail to start HCE service")
+            false
+        }
+
+    private fun getTagIndexById(id: Long): Int? {
+        _savedTags.indexOfFirst { it.id == id }.let { index ->
+            if (index == -1) {
+                Log.e(this.javaClass.name, "getTagIndexById: Tag with ID $id not found")
+                return null
+            } else {
+                return index
+            }
+        }
     }
 }

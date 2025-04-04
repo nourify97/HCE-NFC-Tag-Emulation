@@ -35,6 +35,8 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun TagList(
     context: Context,
+    currentEmulatedTagId: Long?,
+    updateCurrentEmulatedTag: (Long) -> Unit,
     modifier: Modifier = Modifier,
     vm: TagListVM = koinViewModel(),
 ) {
@@ -43,7 +45,12 @@ fun TagList(
     Content(
         tagList = savedTags,
         deleteTag = vm::deleteTag,
-        initTagEmulation = { vm.initTagEmulation(context, it) },
+        currentEmulatedTagId = currentEmulatedTagId,
+        initTagEmulation = { id, ndefMessage ->
+            vm.initTagEmulation(id, ndefMessage, context).let {
+                if (it) updateCurrentEmulatedTag(id)
+            }
+        },
         updateActionBtnVisibility = vm::updateActionVisibility,
         modifier = modifier.fillMaxSize(),
     )
@@ -52,8 +59,9 @@ fun TagList(
 @Composable
 fun Content(
     tagList: List<UiTag>,
+    currentEmulatedTagId: Long?,
     deleteTag: (id: Long) -> Unit,
-    initTagEmulation: (NdefMessage) -> Unit,
+    initTagEmulation: (id: Long, NdefMessage) -> Unit,
     updateActionBtnVisibility: (Long, Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -97,6 +105,7 @@ fun Content(
                 ) {
                     TagItem(
                         tagDetail = tag,
+                        currentEmulatedTagId = currentEmulatedTagId,
                         initTagEmulation = initTagEmulation,
                         modifier = Modifier,
                     )
@@ -109,7 +118,8 @@ fun Content(
 @Composable
 fun TagItem(
     tagDetail: UiTag,
-    initTagEmulation: (NdefMessage) -> Unit,
+    currentEmulatedTagId: Long?,
+    initTagEmulation: (Long, NdefMessage) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -132,10 +142,10 @@ fun TagItem(
         )
         Text(text = tagDetail.name)
         IconButton(
-            onClick = { initTagEmulation(tagDetail.ndefMessage) },
+            onClick = { initTagEmulation(tagDetail.id, tagDetail.ndefMessage) },
             colors =
                 IconButtonDefaults.iconButtonColors(
-                    containerColor = Color.Gray,
+                    containerColor = if (currentEmulatedTagId == tagDetail.id) Color.Blue else Color.Gray,
                 ),
         ) {
             Icon(
@@ -187,7 +197,8 @@ private fun TagListPrev() {
     Content(
         tagList = tagDetailsList,
         deleteTag = {},
-        initTagEmulation = {},
+        currentEmulatedTagId = null,
+        initTagEmulation = { _, _ -> false },
         updateActionBtnVisibility = { _, _ -> },
         modifier = Modifier.fillMaxSize(),
     )
