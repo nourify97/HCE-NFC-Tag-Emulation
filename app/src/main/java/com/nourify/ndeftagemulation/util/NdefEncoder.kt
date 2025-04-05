@@ -65,6 +65,10 @@ class NdefEncoder {
         return buffer.array()
     }
 
+    @Deprecated(
+        message = "Replaced by Android stack api",
+        replaceWith = ReplaceWith("NdefRecord.createTextRecord(language, text)")
+    )
     private fun createTextRecord(
         language: String = DEFAULT_LANGUAGE,
         text: String,
