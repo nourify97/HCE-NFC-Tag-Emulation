@@ -104,7 +104,6 @@ class NdefEncoder {
             """
             BEGIN:VCARD
             VERSION:3.0
-            N:$lastName;$firstName;;;;
             FN:$firstName $lastName
             TEL;TYPE=cell:$phoneNumber
             EMAIL:$email
