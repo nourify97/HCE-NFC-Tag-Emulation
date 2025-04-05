@@ -9,6 +9,8 @@ sealed class CardEmulationState {
 
     data object EmptyTextField : CardEmulationState()
 
+    data object InvalidURL : CardEmulationState()
+
     data object HceServiceStartFail : CardEmulationState()
 
     data object HceServiceStartSuccess : CardEmulationState()

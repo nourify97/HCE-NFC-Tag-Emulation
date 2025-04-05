@@ -68,7 +68,7 @@ fun CardEmulation(
             }
             TagType.URL_TAG -> {
                 UrlTagField(
-                    value = tagInfo.tagMsgContent,
+                    value = tagInfo.tagUrlContent,
                     onValueChange = vm::onUrlTagInfoChange,
                     keyboardController = keyboardController,
                 )
@@ -124,6 +124,7 @@ fun CardEmulation(
         CardEmulationState.NoHceSupport -> makeToast(context, "This device doesn't support tag emulation")
         CardEmulationState.HceServiceStartFail -> makeToast(context, "failed to start emulation service")
         CardEmulationState.HceServiceStartSuccess -> makeToast(context, "Started emulation successfully", Toast.LENGTH_LONG)
+        CardEmulationState.InvalidURL -> makeToast(context, "Invalid URL. Make sure it starts with https://")
         else -> {}
     }.let {
         vm.resetCardEmulationStat()

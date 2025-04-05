@@ -11,12 +11,9 @@ import java.nio.charset.Charset
 
 @Single
 class NdefEncoder {
-    fun encodeText(text: String): NdefMessage = NdefMessage(createTextRecord(text = text, id = NDEF_ID))
+    fun encodeText(text: String): NdefMessage = NdefMessage(NdefRecord.createTextRecord(DEFAULT_LANGUAGE, text))
 
-    fun encodeUrl(url: String): NdefMessage {
-        // TODO change for URL
-        return NdefMessage(createTextRecord(text = url, id = NDEF_ID))
-    }
+    fun encodeUrl(url: String): NdefMessage = NdefMessage(NdefRecord.createUri(url))
 
     fun encodeWifi(wifiInfo: WifiInfo): NdefMessage {
         val payload = generateNdefPayload(wifiInfo.ssid, wifiInfo.password)

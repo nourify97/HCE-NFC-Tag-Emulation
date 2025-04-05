@@ -5,6 +5,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
+import android.util.Log
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nourify.ndeftagemulation.data.NdefTagRepo
@@ -15,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
@@ -29,59 +32,23 @@ class CardEmulationVm(
     private val _cardEmulationState = MutableStateFlow<CardEmulationState>(CardEmulationState.Idle)
     val cardEmulationState = _cardEmulationState.asStateFlow()
 
-    fun onMsgTagInfoChange(value: String) {
-        _tagInfo.value = _tagInfo.value.copy(tagMsgContent = value)
-    }
+    fun onMsgTagInfoChange(value: String) = _tagInfo.update { it.copy(tagMsgContent = value) }
 
-    fun onUrlTagInfoChange(value: String) {
-        _tagInfo.value = _tagInfo.value.copy(tagUrlContent = value)
-    }
+    fun onUrlTagInfoChange(value: String) = _tagInfo.update { it.copy(tagUrlContent = value) }
 
-    fun onWifiTagSsidChange(value: String) {
-        _tagInfo.value =
-            _tagInfo.value.copy(
-                wifiInfo = _tagInfo.value.wifiInfo.copy(ssid = value),
-            )
-    }
+    fun onWifiTagSsidChange(value: String) = _tagInfo.update { it.copy(wifiInfo = it.wifiInfo.copy(ssid = value)) }
 
-    fun onWifiTagPasswordChange(value: String) {
-        _tagInfo.value =
-            _tagInfo.value.copy(
-                wifiInfo = _tagInfo.value.wifiInfo.copy(password = value),
-            )
-    }
+    fun onWifiTagPasswordChange(value: String) = _tagInfo.update { it.copy(wifiInfo = it.wifiInfo.copy(password = value)) }
 
-    fun onTagTypeChange(value: Int) {
-        _tagInfo.value = _tagInfo.value.copy(tagType = TagType.entries[value])
-    }
+    fun onTagTypeChange(value: Int) = _tagInfo.update { it.copy(tagType = TagType.entries[value]) }
 
-    fun onVcardTagFirstNameChange(value: String) {
-        _tagInfo.value =
-            _tagInfo.value.copy(
-                vCardInfo = _tagInfo.value.vCardInfo.copy(firstName = value),
-            )
-    }
+    fun onVcardTagFirstNameChange(value: String) = _tagInfo.update { it.copy(vCardInfo = it.vCardInfo.copy(firstName = value)) }
 
-    fun onVcardTagLastNameChange(value: String) {
-        _tagInfo.value =
-            _tagInfo.value.copy(
-                vCardInfo = _tagInfo.value.vCardInfo.copy(lastName = value),
-            )
-    }
+    fun onVcardTagLastNameChange(value: String) = _tagInfo.update { it.copy(vCardInfo = it.vCardInfo.copy(lastName = value)) }
 
-    fun onVcardTagPhoneNumberChange(value: String) {
-        _tagInfo.value =
-            _tagInfo.value.copy(
-                vCardInfo = _tagInfo.value.vCardInfo.copy(phoneNumber = value),
-            )
-    }
+    fun onVcardTagPhoneNumberChange(value: String) = _tagInfo.update { it.copy(vCardInfo = it.vCardInfo.copy(phoneNumber = value)) }
 
-    fun onVcardTagEmailChange(value: String) {
-        _tagInfo.value =
-            _tagInfo.value.copy(
-                vCardInfo = _tagInfo.value.vCardInfo.copy(email = value),
-            )
-    }
+    fun onVcardTagEmailChange(value: String) = _tagInfo.update { it.copy(vCardInfo = it.vCardInfo.copy(email = value)) }
 
     fun initTagEmulation(
         context: Context,
@@ -99,11 +66,10 @@ class CardEmulationVm(
                     }
                 }
                 TagType.URL_TAG -> {
-                    if (_tagInfo.value.tagUrlContent.isBlank()) {
-                        // TODO process URL validity
-                        _cardEmulationState.value = CardEmulationState.EmptyTextField
-                    } else {
+                    if (isUrlValid(_tagInfo.value.tagUrlContent)) {
                         ndefMessage = ndefEncoder.encodeUrl(_tagInfo.value.tagUrlContent)
+                    } else {
+                        _cardEmulationState.value = CardEmulationState.InvalidURL
                     }
                 }
                 TagType.WIFI_TAG -> {
@@ -131,15 +97,21 @@ class CardEmulationVm(
             }
 
             try {
-                context.startService(
-                    Intent(context, CardEmulationService::class.java).apply {
-                        putExtra("ndefMessage", ndefMessage)
-                    },
-                )
+                ndefMessage?.let { msg ->
+                    context.startService(
+                        Intent(context, CardEmulationService::class.java).apply {
+                            putExtra("ndefMessage", msg)
+                        },
+                    )
+                } ?: run {
+                    Log.i(this.javaClass.name, "NdefMessage is Null")
+                    return
+                }
 
                 // emulation started successfully
                 _cardEmulationState.value = CardEmulationState.HceServiceStartSuccess
             } catch (e: Exception) {
+                Log.e(this.javaClass.name, "Failed to start HCE service", e)
                 _cardEmulationState.value = CardEmulationState.HceServiceStartFail
             }
         }
@@ -163,10 +135,7 @@ class CardEmulationVm(
                     }
                 }
                 TagType.URL_TAG -> {
-                    if (_tagInfo.value.tagUrlContent.isBlank()) {
-                        // TODO process URL validity
-                        _cardEmulationState.value = CardEmulationState.EmptyTextField
-                    } else {
+                    if (isUrlValid(_tagInfo.value.tagUrlContent)) {
                         ndefTagRepo.insert(
                             tag =
                                 NdefTag(
@@ -175,6 +144,8 @@ class CardEmulationVm(
                                     ndefMessage = ndefEncoder.encodeUrl(_tagInfo.value.tagUrlContent),
                                 ),
                         )
+                    } else {
+                        _cardEmulationState.value = CardEmulationState.InvalidURL
                     }
                 }
                 TagType.WIFI_TAG -> {
@@ -216,6 +187,11 @@ class CardEmulationVm(
             }
         }
     }
+
+    private fun isUrlValid(url: String) =
+        url.isNotBlank() &&
+            url.startsWith("https://", ignoreCase = true) &&
+            Patterns.WEB_URL.matcher(url).matches()
 
     fun checkNfcSupport(
         context: Context,
